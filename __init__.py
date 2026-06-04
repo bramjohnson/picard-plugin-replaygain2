@@ -32,21 +32,17 @@ from picard.plugin3.api import (
     BaseAction,
     Cluster,
     File,
-    OptionsPage,
     PluginApi,
     Track,
-    t_,
 )
 from picard.track import NonAlbumTrack
 from picard.util import thread
-from PyQt6.QtWidgets import QFileDialog
 
-from src.actions.scan_albums import ScanAlbums
-from src.actions.scan_cluster import ScanCluster
-from src.actions.scan_tracks import ScanTracks
-from src.options.options_page import ReplayGain2OptionsPage
+from src.replaygain2 import ScanAlbums
+# from src.actions.scan_cluster import ScanCluster
+# from src.actions.scan_tracks import ScanTracks
+# from src.options.options_page import ReplayGain2OptionsPage
 
-from .ui_options import Ui_ReplayGain2OptionsPage
 
 SUPPORTED_FORMATS = (
     AiffFile,
@@ -737,8 +733,8 @@ def album_metadata_processor_callback(
 def enable(api: PluginApi):
     """Called when plugin is enabled."""
 
-    ScanTracks.register_with(api)
+    # ScanTracks.register_with(api)
     ScanAlbums.register_with(api)
-    ScanCluster.register_with(api)
-    ReplayGain2OptionsPage.register_with(api)
+    # ScanCluster.register_with(api)
+    # ReplayGain2OptionsPage.register_with(api)
     api.register_album_metadata_processor(album_metadata_processor_callback)
