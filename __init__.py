@@ -6,7 +6,7 @@ import shutil
 import subprocess  # nosec: B404
 from enum import Enum, IntEnum
 from functools import partial
-from typing import Any, final, override
+from typing import Any, final
 
 from picard.formats import (
     AiffFile,
