@@ -2,7 +2,7 @@ from typing import final
 
 from picard.plugin3.api import PluginApi
 
-from common.data import (
+from ..common.data import (
     PLUGIN_CONFIG_ALBUM_AES77,
     PLUGIN_CONFIG_ALBUM_LOAD,
     PLUGIN_CONFIG_ALBUM_TAGS,

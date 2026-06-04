@@ -2,8 +2,8 @@ from typing import override
 
 from picard.plugin3.api import PluginApi, Track, t_
 
-from actions.shared_action import BaseReplayGainAction
-from common.data import ReplaygainablePair
+from .shared_action import BaseReplayGainAction
+from ..common.data import ReplaygainablePair
 
 
 class ScanTracks(BaseReplayGainAction[list[Track]]):
