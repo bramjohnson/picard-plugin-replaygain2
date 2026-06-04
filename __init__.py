@@ -371,7 +371,7 @@ def update_metadata(
             )
 
 
-def calculate_replaygain_v2(pairs: list[ReplaygainablePair], options):
+def calculate_replaygain(pairs: list[ReplaygainablePair], options):
     api = PluginApi.get_api()
     config = PluginConfig(api)
 
@@ -474,7 +474,7 @@ class ScanCluster(BaseAction):
         for cluster in clusters:
             thread.run_task(
                 partial(
-                    calculate_replaygain_v2,
+                    calculate_replaygain,
                     ReplaygainablePair.from_cluster(cluster),
                     self.options,
                 ),
@@ -512,7 +512,7 @@ class ScanTracks(BaseAction):
         )
         thread.run_task(
             partial(
-                calculate_replaygain_v2,
+                calculate_replaygain,
                 ReplaygainablePair.from_tracks(tracks),
                 self.options,
             ),
@@ -580,7 +580,7 @@ class ScanAlbums(BaseAction):
         for album in albums:
             thread.run_task(
                 partial(
-                    calculate_replaygain_v2,
+                    calculate_replaygain,
                     ReplaygainablePair.from_album(album),
                     self.options,
                 ),
@@ -709,7 +709,7 @@ def album_metadata_processor_callback(
         config = PluginConfig(api)
         thread.run_task(
             partial(
-                calculate_replaygain_v2,
+                calculate_replaygain,
                 ReplaygainablePair.from_album(album),
                 build_rsgain_options(config),
             ),
