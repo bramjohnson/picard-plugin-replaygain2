@@ -76,7 +76,7 @@ class BaseReplayGainAction[T](BaseAction, ABC, metaclass=CombinedMeta):
             self.current += 1
             return f" ({self.current}/{self.num_items})"
 
-    def _result_callback(self, item: T, _result=None, error=None):
+    def _result_callback(self, item: T, result=None, error=None):
         progress = self._format_progress()
         if error is None:
             self.update_item(item)
