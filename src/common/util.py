@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from .statusbar import WindowStatusbarReplaygainCalculationMessages
+from .statusbar import StatusbarMessages
 
 
 def isinstanceany(obj: object, types):
@@ -14,5 +14,5 @@ def does_rsgain_path_still_exist(rsgain_command: str) -> bool:
         return True
     # INVARIANT: rsgain no longer exists ):
 
-    WindowStatusbarReplaygainCalculationMessages.rsgain_not_found()
+    StatusbarMessages.rsgain_not_found()
     return False

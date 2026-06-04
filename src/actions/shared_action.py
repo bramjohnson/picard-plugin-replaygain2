@@ -6,7 +6,7 @@ from picard.util import thread
 
 from ..common.data import ReplaygainablePair
 from ..common.rsgain import build_rsgain_options, calculate_replaygain
-from ..common.statusbar import WindowStatusbarReplaygainCalculationMessages
+from ..common.statusbar import StatusbarMessages
 from ..common.util import does_rsgain_path_still_exist
 from ..options.config import PluginConfig
 
@@ -56,7 +56,7 @@ class BaseReplayGainAction[T](BaseAction, ABC, metaclass=CombinedMeta):
 
         self.num_items = len(items)
         self.current = 0
-        WindowStatusbarReplaygainCalculationMessages.inprogress(
+        StatusbarMessages.inprogress(
             self.get_item_name(items[0]), self.num_items, self.unit
         )
         for item in items:
@@ -80,10 +80,6 @@ class BaseReplayGainAction[T](BaseAction, ABC, metaclass=CombinedMeta):
         progress = self._format_progress()
         if error is None:
             self.update_item(item)
-            WindowStatusbarReplaygainCalculationMessages.success(
-                self.get_item_name(item), progress, self.unit
-            )
+            StatusbarMessages.success(self.get_item_name(item), progress, self.unit)
         else:
-            WindowStatusbarReplaygainCalculationMessages.failure(
-                self.get_item_name(item), progress, self.unit
-            )
+            StatusbarMessages.failure(self.get_item_name(item), progress, self.unit)

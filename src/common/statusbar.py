@@ -1,7 +1,7 @@
 from picard.plugin3.api import PluginApi
 
 
-class WindowStatusbarReplaygainCalculationMessages:
+class StatusbarMessages:
     @classmethod
     def inprogress(cls, name: str, count: int, unit: str):
         api = PluginApi.get_api()
