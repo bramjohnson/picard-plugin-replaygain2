@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from functools import partial
 
 from picard.plugin3.api import BaseAction
@@ -11,7 +11,11 @@ from ..common.util import does_rsgain_path_still_exist
 from ..options.config import PluginConfig
 
 
-class BaseReplayGainAction[T](BaseAction, ABC):
+class CombinedMeta(ABCMeta, type(BaseAction)):
+    pass
+
+
+class BaseReplayGainAction[T](BaseAction, ABC, metaclass=CombinedMeta):
     def __init__(self):
         super().__init__()
         self.num_items = 0
