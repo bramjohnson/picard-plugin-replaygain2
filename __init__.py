@@ -41,6 +41,11 @@ from picard.track import NonAlbumTrack
 from picard.util import thread
 from PyQt6.QtWidgets import QFileDialog
 
+from src.actions.scan_albums import ScanAlbums
+from src.actions.scan_cluster import ScanCluster
+from src.actions.scan_tracks import ScanTracks
+from src.options.options_page import ReplayGain2OptionsPage
+
 from .ui_options import Ui_ReplayGain2OptionsPage
 
 SUPPORTED_FORMATS = (
@@ -408,7 +413,6 @@ def calculate_replaygain(pairs: list[ReplaygainablePair], options):
         (output, _unused) = process.communicate()
         rc = process.poll()
         if rc:
-            api.logger.debug(process.stderr)
             raise ReplayGain2Error(f"rsgain returned non-zero code ({rc})")
         api.logger.debug(output)
         lines = output.splitlines()
@@ -455,83 +459,93 @@ def isinstanceany(obj: object, types):
     return any(isinstance(obj, t) for t in types)
 
 
-class ScanCluster(BaseAction):
-    TITLE = t_("action.cluster", "Calculate Cluster Replay&Gain as Album…")
+class BaseReplayGainAction(BaseAction):
+    def __init__(self):
+        super().__init__()
 
-    @override
-    def callback(self, objs):
+    def _callback_sanity_check(self):
         config = PluginConfig()
-
         if not does_rsgain_path_still_exist(config.rsgain_path):
             return
-        clusters: list[Cluster] = list(filter(lambda o: isinstance(o, Cluster), objs))
-
-        self.options = build_rsgain_options(config)
-        num_clusters = len(clusters)
-        WindowStatusbarReplaygainCalculationMessages.inprogress(
-            clusters[0].metadata["album"], num_clusters, "cluster"
-        )
-        for cluster in clusters:
-            thread.run_task(
-                partial(
-                    calculate_replaygain,
-                    ReplaygainablePair.from_cluster(cluster),
-                    self.options,
-                ),
-                partial(self._replaygain_callback, cluster.files),
-            )
-
-    def _replaygain_callback(self, files: ListOfMetadataItems, result=None, error=None):
-        if error is None:
-            for file in files:
-                file.update()
-            WindowStatusbarReplaygainCalculationMessages.success(
-                files[0].filename, "", "cluster"
-            )
-        else:
-            WindowStatusbarReplaygainCalculationMessages.failure(
-                files[0].filename, "", "cluster"
-            )
 
 
-class ScanTracks(BaseAction):
-    TITLE = t_("action.tracks", "Calculate Replay&Gain…")
+# class ScanCluster(BaseAction):
+#     TITLE = t_("action.cluster", "Calculate Cluster Replay&Gain as Album…")
 
-    @override
-    def callback(self, objs):
-        config = PluginConfig()
+#     @override
+#     def callback(self, objs):
+#         config = PluginConfig()
 
-        if not does_rsgain_path_still_exist(config.rsgain_path):
-            return
-        tracks: list[Track] = list(filter(lambda o: isinstance(o, Track), objs))
-        self.options = build_rsgain_options(config)
-        num_tracks = len(tracks)
+#         if not does_rsgain_path_still_exist(config.rsgain_path):
+#             return
+#         clusters: list[Cluster] = list(filter(lambda o: isinstance(o, Cluster), objs))
 
-        WindowStatusbarReplaygainCalculationMessages.inprogress(
-            tracks[0].files[0].filename, num_tracks, "track"
-        )
-        thread.run_task(
-            partial(
-                calculate_replaygain,
-                ReplaygainablePair.from_tracks(tracks),
-                self.options,
-            ),
-            partial(self._replaygain_callback, tracks),
-        )
+#         self.options = build_rsgain_options(config)
+#         num_clusters = len(clusters)
+#         WindowStatusbarReplaygainCalculationMessages.inprogress(
+#             clusters[0].metadata["album"], num_clusters, "cluster"
+#         )
+#         for cluster in clusters:
+#             thread.run_task(
+#                 partial(
+#                     calculate_replaygain,
+#                     ReplaygainablePair.from_cluster(cluster),
+#                     self.options,
+#                 ),
+#                 partial(self._replaygain_callback, cluster.files),
+#             )
 
-    def _replaygain_callback(self, tracks, result=None, error=None):
-        if error is None:
-            for track in tracks:
-                for file in track.files:
-                    file.update()
-                track.update()
-            WindowStatusbarReplaygainCalculationMessages.success(
-                tracks[0].files[0].filename, "", "track"
-            )
-        else:
-            WindowStatusbarReplaygainCalculationMessages.failure(
-                tracks[0].files[0].filename, "", "track"
-            )
+#     def _replaygain_callback(self, files: ListOfMetadataItems, result=None, error=None):
+#         if error is None:
+#             for file in files:
+#                 file.update()
+#             WindowStatusbarReplaygainCalculationMessages.success(
+#                 files[0].filename, "", "cluster"
+#             )
+#         else:
+#             WindowStatusbarReplaygainCalculationMessages.failure(
+#                 files[0].filename, "", "cluster"
+#             )
+
+
+# class ScanTracks(BaseAction):
+#     TITLE = t_("action.tracks", "Calculate Replay&Gain…")
+
+#     @override
+#     def callback(self, objs):
+#         config = PluginConfig()
+
+#         if not does_rsgain_path_still_exist(config.rsgain_path):
+#             return
+#         tracks: list[Track] = list(filter(lambda o: isinstance(o, Track), objs))
+#         self.options = build_rsgain_options(config)
+#         num_tracks = len(tracks)
+
+#         WindowStatusbarReplaygainCalculationMessages.inprogress(
+#             tracks[0].files[0].filename, num_tracks, "track"
+#         )
+#         thread.run_task(
+#             partial(
+#                 calculate_replaygain,
+#                 ReplaygainablePair.from_tracks(tracks),
+#                 self.options,
+#             ),
+#             partial(self._replaygain_callback, tracks),
+#         )
+
+#     def _replaygain_callback(self, tracks, result=None, error=None):
+#         if error is None:
+#             for track in tracks:
+#                 for file in track.files:
+#                     file.update()
+#                 track.update()
+#             WindowStatusbarReplaygainCalculationMessages.success(
+#                 tracks[0].files[0].filename, "", "track"
+#             )
+#         else:
+#             WindowStatusbarReplaygainCalculationMessages.failure(
+#                 tracks[0].files[0].filename, "", "track"
+#             )
 
 
 def albumgain_callback(progress: str, album: Album, result=None, error=None):
@@ -554,146 +568,146 @@ def albumgain_callback(progress: str, album: Album, result=None, error=None):
         )
 
 
-@final
-class ScanAlbums(BaseAction):
-    TITLE = t_("action.albums", "Calculate Replay&Gain…")
+# @final
+# class ScanAlbums(BaseAction):
+#     TITLE = t_("action.albums", "Calculate Replay&Gain…")
 
-    def __init__(self):
-        super().__init__()
-        self.options = []
-        self.num_albums = 0
-        self.current = 0
+#     def __init__(self):
+#         super().__init__()
+#         self.options = []
+#         self.num_albums = 0
+#         self.current = 0
 
-    @override
-    def callback(self, objs):
-        config = PluginConfig()
-        if not does_rsgain_path_still_exist(config.rsgain_path):
-            return
-        self.options = build_rsgain_options(config)
-        albums: list[Album] = list(filter(lambda o: isinstance(o, Album), objs))
+#     @override
+#     def callback(self, objs):
+#         config = PluginConfig()
+#         if not does_rsgain_path_still_exist(config.rsgain_path):
+#             return
+#         self.options = build_rsgain_options(config)
+#         albums: list[Album] = list(filter(lambda o: isinstance(o, Album), objs))
 
-        self.num_albums = len(albums)
-        self.current = 0
-        WindowStatusbarReplaygainCalculationMessages.inprogress(
-            albums[0].metadata["album"], self.num_albums, "album"
-        )
-        for album in albums:
-            thread.run_task(
-                partial(
-                    calculate_replaygain,
-                    ReplaygainablePair.from_album(album),
-                    self.options,
-                ),
-                partial(self._albumgain_callback, album),
-            )
+#         self.num_albums = len(albums)
+#         self.current = 0
+#         WindowStatusbarReplaygainCalculationMessages.inprogress(
+#             albums[0].metadata["album"], self.num_albums, "album"
+#         )
+#         for album in albums:
+#             thread.run_task(
+#                 partial(
+#                     calculate_replaygain,
+#                     ReplaygainablePair.from_album(album),
+#                     self.options,
+#                 ),
+#                 partial(self._albumgain_callback, album),
+#             )
 
-    def _format_progress(self):
-        if self.num_albums == 1:
-            return ""
-        else:
-            self.current += 1
-            return f" ({self.current}/{self.num_albums})"
+#     def _format_progress(self):
+#         if self.num_albums == 1:
+#             return ""
+#         else:
+#             self.current += 1
+#             return f" ({self.current}/{self.num_albums})"
 
-    def _albumgain_callback(self, album: Album, result=None, error=None):
-        progress = self._format_progress()
-        albumgain_callback(progress, album, result, error)
+#     def _albumgain_callback(self, album: Album, result=None, error=None):
+#         progress = self._format_progress()
+#         albumgain_callback(progress, album, result, error)
 
 
-class ReplayGain2OptionsPage(OptionsPage):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.ui = Ui_ReplayGain2OptionsPage()
-        self.ui.setupUi(self)
-        self.plugin_config = PluginConfig()
+# class ReplayGain2OptionsPage(OptionsPage):
+#     def __init__(self, parent=None):
+#         super().__init__(parent)
+#         self.ui = Ui_ReplayGain2OptionsPage()
+#         self.ui.setupUi(self)
+#         self.plugin_config = PluginConfig()
 
-        for mode in ClipMode:
-            label = self._load_clip_mode(mode)
-            self.ui.clip_mode.addItem(label, mode)
+#         for mode in ClipMode:
+#             label = self._load_clip_mode(mode)
+#             self.ui.clip_mode.addItem(label, mode)
 
-        for mode in OpusMode:
-            label = self._load_opus_mode(mode)
-            self.ui.opus_mode.addItem(label, mode)
+#         for mode in OpusMode:
+#             label = self._load_opus_mode(mode)
+#             self.ui.opus_mode.addItem(label, mode)
 
-        self.ui.rsgain_command_browse.clicked.connect(self.rsgain_command_browse)
+#         self.ui.rsgain_command_browse.clicked.connect(self.rsgain_command_browse)
 
-    def _load_clip_mode(self, clip_mode: ClipMode):
-        option_clip_mode = "option.clip_mode"
-        match clip_mode:
-            case ClipMode.DISABLED:
-                return self.api.tr(f"{option_clip_mode}.disabled", "Disabled")
-            case ClipMode.POSITIVE:
-                return self.api.tr(
-                    f"{option_clip_mode}.enabled_positive_gain",
-                    "Enabled for positive gain values only",
-                )
-            case ClipMode.ALWAYS:
-                return self.api.tr(
-                    f"{option_clip_mode}.enabled_always", "Always enabled"
-                )
+#     def _load_clip_mode(self, clip_mode: ClipMode):
+#         option_clip_mode = "option.clip_mode"
+#         match clip_mode:
+#             case ClipMode.DISABLED:
+#                 return self.api.tr(f"{option_clip_mode}.disabled", "Disabled")
+#             case ClipMode.POSITIVE:
+#                 return self.api.tr(
+#                     f"{option_clip_mode}.enabled_positive_gain",
+#                     "Enabled for positive gain values only",
+#                 )
+#             case ClipMode.ALWAYS:
+#                 return self.api.tr(
+#                     f"{option_clip_mode}.enabled_always", "Always enabled"
+#                 )
 
-    def _load_opus_mode(self, opus_mode: OpusMode):
-        option_opus = "option.opus"
-        match opus_mode:
-            case OpusMode.STANDARD:
-                return self.api.tr(
-                    f"{option_opus}.standard", "Write standard ReplayGain tags"
-                )
-            case OpusMode.R128:
-                return self.api.tr(f"{option_opus}.r128", "Write R128_*_GAIN tags")
-            case OpusMode.BOTH:
-                return self.api.tr(
-                    f"{option_opus}.both", "Write both standard and R128 tags"
-                )
+#     def _load_opus_mode(self, opus_mode: OpusMode):
+#         option_opus = "option.opus"
+#         match opus_mode:
+#             case OpusMode.STANDARD:
+#                 return self.api.tr(
+#                     f"{option_opus}.standard", "Write standard ReplayGain tags"
+#                 )
+#             case OpusMode.R128:
+#                 return self.api.tr(f"{option_opus}.r128", "Write R128_*_GAIN tags")
+#             case OpusMode.BOTH:
+#                 return self.api.tr(
+#                     f"{option_opus}.both", "Write both standard and R128 tags"
+#                 )
 
-    @override
-    def load(self):
-        self.ui.rsgain_command.setText(self.plugin_config.rsgain_path)
-        self.ui.album_tags.setChecked(self.plugin_config.should_calculate_album_gain)
-        self.ui.album_aes77.setChecked(
-            self.plugin_config.should_use_loudest_track_as_album_loudness
-        )
-        self.ui.true_peak.setChecked(self.plugin_config.should_use_true_peak)
-        self.ui.reference_loudness.setChecked(
-            self.plugin_config.should_write_reference_loudness_tags
-        )
-        self.ui.target_loudness.setValue(self.plugin_config.target_loudness)
-        self.ui.clip_mode.setCurrentText(
-            self._load_clip_mode(self.plugin_config.clipping_protection_mode)
-        )
-        self.ui.max_peak.setValue(self.plugin_config.max_peak_db)
-        self.ui.opus_mode.setCurrentText(
-            self._load_opus_mode(self.plugin_config.opus_mode)
-        )
-        self.ui.opus_m23.setChecked(self.plugin_config.should_opus_r128_to_m23)
-        self.ui.album_load.setChecked(self.plugin_config.should_calculate_on_album_load)
+#     @override
+#     def load(self):
+#         self.ui.rsgain_command.setText(self.plugin_config.rsgain_path)
+#         self.ui.album_tags.setChecked(self.plugin_config.should_calculate_album_gain)
+#         self.ui.album_aes77.setChecked(
+#             self.plugin_config.should_use_loudest_track_as_album_loudness
+#         )
+#         self.ui.true_peak.setChecked(self.plugin_config.should_use_true_peak)
+#         self.ui.reference_loudness.setChecked(
+#             self.plugin_config.should_write_reference_loudness_tags
+#         )
+#         self.ui.target_loudness.setValue(self.plugin_config.target_loudness)
+#         self.ui.clip_mode.setCurrentText(
+#             self._load_clip_mode(self.plugin_config.clipping_protection_mode)
+#         )
+#         self.ui.max_peak.setValue(self.plugin_config.max_peak_db)
+#         self.ui.opus_mode.setCurrentText(
+#             self._load_opus_mode(self.plugin_config.opus_mode)
+#         )
+#         self.ui.opus_m23.setChecked(self.plugin_config.should_opus_r128_to_m23)
+#         self.ui.album_load.setChecked(self.plugin_config.should_calculate_on_album_load)
 
-    @override
-    def save(self):
-        self.plugin_config.rsgain_path = self.ui.rsgain_command.text()
-        self.plugin_config.should_calculate_album_gain = self.ui.album_tags.isChecked()
-        self.plugin_config.should_use_loudest_track_as_album_loudness = (
-            self.ui.album_aes77.isChecked()
-        )
-        self.plugin_config.should_use_true_peak = self.ui.true_peak.isChecked()
-        self.plugin_config.should_write_reference_loudness_tags = (
-            self.ui.reference_loudness.isChecked()
-        )
-        self.plugin_config.target_loudness = self.ui.target_loudness.value()
-        self.plugin_config.clipping_protection_mode = self.ui.clip_mode.currentData()
-        self.plugin_config.max_peak_db = self.ui.max_peak.value()
-        self.plugin_config.opus_mode = self.ui.opus_mode.currentData()
-        self.plugin_config.should_opus_r128_to_m23 = self.ui.opus_m23.isChecked()
-        self.plugin_config.should_calculate_on_album_load = (
-            self.ui.album_load.isChecked()
-        )
+#     @override
+#     def save(self):
+#         self.plugin_config.rsgain_path = self.ui.rsgain_command.text()
+#         self.plugin_config.should_calculate_album_gain = self.ui.album_tags.isChecked()
+#         self.plugin_config.should_use_loudest_track_as_album_loudness = (
+#             self.ui.album_aes77.isChecked()
+#         )
+#         self.plugin_config.should_use_true_peak = self.ui.true_peak.isChecked()
+#         self.plugin_config.should_write_reference_loudness_tags = (
+#             self.ui.reference_loudness.isChecked()
+#         )
+#         self.plugin_config.target_loudness = self.ui.target_loudness.value()
+#         self.plugin_config.clipping_protection_mode = self.ui.clip_mode.currentData()
+#         self.plugin_config.max_peak_db = self.ui.max_peak.value()
+#         self.plugin_config.opus_mode = self.ui.opus_mode.currentData()
+#         self.plugin_config.should_opus_r128_to_m23 = self.ui.opus_m23.isChecked()
+#         self.plugin_config.should_calculate_on_album_load = (
+#             self.ui.album_load.isChecked()
+#         )
 
-    def rsgain_command_browse(self):
-        path, _filter = QFileDialog.getOpenFileName(
-            self, "", self.ui.rsgain_command.text()
-        )
-        if path:
-            path = os.path.normpath(path)
-            self.ui.rsgain_command.setText(path)
+#     def rsgain_command_browse(self):
+#         path, _filter = QFileDialog.getOpenFileName(
+#             self, "", self.ui.rsgain_command.text()
+#         )
+#         if path:
+#             path = os.path.normpath(path)
+#             self.ui.rsgain_command.setText(path)
 
 
 def album_metadata_processor_callback(
@@ -722,19 +736,9 @@ def album_metadata_processor_callback(
 
 def enable(api: PluginApi):
     """Called when plugin is enabled."""
-    api.plugin_config.register_option(PLUGIN_CONFIG_RSGAIN_COMMAND, "rsgain")
-    api.plugin_config.register_option(PLUGIN_CONFIG_ALBUM_TAGS, True)
-    api.plugin_config.register_option(PLUGIN_CONFIG_ALBUM_AES77, False)
-    api.plugin_config.register_option(PLUGIN_CONFIG_TRUE_PEAK, False)
-    api.plugin_config.register_option(PLUGIN_CONFIG_REFERENCE_LOUDNESS, False)
-    api.plugin_config.register_option(PLUGIN_CONFIG_TARGET_LOUDNESS, -18)
-    api.plugin_config.register_option(PLUGIN_CONFIG_CLIP_MODE, ClipMode.POSITIVE)
-    api.plugin_config.register_option(PLUGIN_CONFIG_MAX_PEAK, 0)
-    api.plugin_config.register_option(PLUGIN_CONFIG_OPUS_MODE, OpusMode.STANDARD)
-    api.plugin_config.register_option(PLUGIN_CONFIG_OPUS_M23, False)
-    api.plugin_config.register_option(PLUGIN_CONFIG_ALBUM_LOAD, False)
-    api.register_track_action(ScanTracks)
-    api.register_album_action(ScanAlbums)
-    api.register_cluster_action(ScanCluster)
-    api.register_options_page(ReplayGain2OptionsPage)
+
+    ScanTracks.register_with(api)
+    ScanAlbums.register_with(api)
+    ScanCluster.register_with(api)
+    ReplayGain2OptionsPage.register_with(api)
     api.register_album_metadata_processor(album_metadata_processor_callback)
