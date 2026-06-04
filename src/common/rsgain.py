@@ -5,7 +5,7 @@ from typing import Any
 from picard.formats import OggOpusFile
 from picard.plugin3.api import Metadata, PluginApi
 
-from common.data import (
+from .data import (
     REPLACEABLE_REPLAYGAIN_TAGS,
     RSGAIN_TABLE_HEADER_LENGTH,
     SUPPORTED_FORMATS,
@@ -14,8 +14,8 @@ from common.data import (
     ReplayGain2Error,
     ReplaygainablePair,
 )
-from common.util import isinstanceany
-from options.config import PluginConfig
+from .util import isinstanceany
+from ..options.config import PluginConfig
 
 
 # Convert Picard settings dict to rsgain command line options
