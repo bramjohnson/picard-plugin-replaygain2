@@ -2,7 +2,7 @@ from typing import final, override
 
 from picard.plugin3.api import Album, PluginApi, t_
 
-from actions.shared_action import BaseReplayGainAction
+from .shared_action import BaseReplayGainAction
 from common.data import ReplaygainablePair
 
 
