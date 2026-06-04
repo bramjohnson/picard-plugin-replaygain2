@@ -38,7 +38,7 @@ from picard.plugin3.api import (
 from picard.track import NonAlbumTrack
 from picard.util import thread
 
-from .src.replaygain2 import ScanAlbums
+from src.replaygain2.actions.scan_albums import ScanAlbums
 # from src.actions.scan_cluster import ScanCluster
 # from src.actions.scan_tracks import ScanTracks
 # from src.options.options_page import ReplayGain2OptionsPage
