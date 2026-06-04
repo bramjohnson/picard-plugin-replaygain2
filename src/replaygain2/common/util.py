@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from src.common.statusbar import WindowStatusbarReplaygainCalculationMessages
+from common.statusbar import WindowStatusbarReplaygainCalculationMessages
 
 
 def isinstanceany(obj: object, types):

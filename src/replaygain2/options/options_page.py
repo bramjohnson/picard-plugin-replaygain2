@@ -4,7 +4,7 @@ from typing import override
 from PyQt6.QtWidgets import QFileDialog
 from picard.plugin3.api import OptionsPage, PluginApi
 
-from src.common.data import (
+from common.data import (
     PLUGIN_CONFIG_ALBUM_AES77,
     PLUGIN_CONFIG_ALBUM_LOAD,
     PLUGIN_CONFIG_ALBUM_TAGS,
@@ -19,7 +19,7 @@ from src.common.data import (
     ClipMode,
     OpusMode,
 )
-from src.options.config import PluginConfig
+from options.config import PluginConfig
 from ui_options import Ui_ReplayGain2OptionsPage
 
 

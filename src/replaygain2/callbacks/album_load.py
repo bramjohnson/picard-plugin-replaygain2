@@ -3,11 +3,11 @@ from functools import partial
 from picard.plugin3.api import PluginApi, Album, Metadata
 from picard.util import thread
 
-from src.actions.scan_albums import ScanAlbums
-from src.common.data import ReplaygainablePair
-from src.common.rsgain import build_rsgain_options, calculate_replaygain
-from src.common.statusbar import WindowStatusbarReplaygainCalculationMessages
-from src.options.config import PluginConfig
+from actions.scan_albums import ScanAlbums
+from common.data import ReplaygainablePair
+from common.rsgain import build_rsgain_options, calculate_replaygain
+from common.statusbar import WindowStatusbarReplaygainCalculationMessages
+from options.config import PluginConfig
 
 
 def album_metadata_processor_callback(

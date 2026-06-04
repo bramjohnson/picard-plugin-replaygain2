@@ -4,11 +4,11 @@ from functools import partial
 from picard.plugin3.api import BaseAction
 from picard.util import thread
 
-from src.common.data import ReplaygainablePair
-from src.common.rsgain import build_rsgain_options, calculate_replaygain
-from src.common.statusbar import WindowStatusbarReplaygainCalculationMessages
-from src.common.util import does_rsgain_path_still_exist
-from src.options.config import PluginConfig
+from common.data import ReplaygainablePair
+from common.rsgain import build_rsgain_options, calculate_replaygain
+from common.statusbar import WindowStatusbarReplaygainCalculationMessages
+from common.util import does_rsgain_path_still_exist
+from options.config import PluginConfig
 
 
 class BaseReplayGainAction[T](BaseAction, ABC):
