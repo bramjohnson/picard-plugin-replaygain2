@@ -36,8 +36,8 @@ from picard.plugin3.api import (
     Track,
 )
 from picard.track import NonAlbumTrack
-from picard.util import thread
 
+from .src.callbacks.album_load import album_metadata_processor_callback
 from .src.actions.scan_albums import ScanAlbums
 from .src.actions.scan_cluster import ScanCluster
 from .src.actions.scan_tracks import ScanTracks
@@ -706,28 +706,28 @@ def albumgain_callback(progress: str, album: Album, result=None, error=None):
 #             self.ui.rsgain_command.setText(path)
 
 
-def album_metadata_processor_callback(
-    api: PluginApi, album: Album, metadata: Metadata, options
-):
-    if not PluginConfig(api).should_calculate_on_album_load:
-        return
+# def album_metadata_processor_callback(
+#     api: PluginApi, album: Album, metadata: Metadata, options
+# ):
+#     if not PluginConfig(api).should_calculate_on_album_load:
+#         return
 
-    def runwhenloaded():
-        album_name = album.metadata["album"]
-        WindowStatusbarReplaygainCalculationMessages.inprogress(album_name, 1, "album")
+#     def runwhenloaded():
+#         album_name = album.metadata["album"]
+#         WindowStatusbarReplaygainCalculationMessages.inprogress(album_name, 1, "album")
 
-        config = PluginConfig(api)
-        thread.run_task(
-            partial(
-                calculate_replaygain,
-                ReplaygainablePair.from_album(album),
-                build_rsgain_options(config),
-            ),
-            partial(albumgain_callback, "", album),
-        )
+#         config = PluginConfig(api)
+#         thread.run_task(
+#             partial(
+#                 calculate_replaygain,
+#                 ReplaygainablePair.from_album(album),
+#                 build_rsgain_options(config),
+#             ),
+#             partial(albumgain_callback, "", album),
+#         )
 
-    # Must run_when_loaded, else tracks will not be present on the Album object
-    album.run_when_loaded(runwhenloaded)
+#     # Must run_when_loaded, else tracks will not be present on the Album object
+#     album.run_when_loaded(runwhenloaded)
 
 
 def enable(api: PluginApi):
